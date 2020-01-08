@@ -260,21 +260,22 @@ public class ChromeUsb extends CordovaPlugin {
         JSONArray result = new JSONArray();
         for (UsbDevice device: devices.values()) {
             if (filterDevice(device, filters)) {
-                addDeviceToArray(result, device.getDeviceId(), device.getVendorId(),
+                addDeviceToArray(result, device.getProductName(), device.getDeviceId(), device.getVendorId(),
                         device.getProductId());
             }
         }
         if (params.optBoolean("appendFakeDevice", false)) {
-            addDeviceToArray(result, FakeDevice.ID, FakeDevice.VID, FakeDevice.PID);
+            addDeviceToArray(result, FakeDevice.ProductName, FakeDevice.ID, FakeDevice.VID, FakeDevice.PID);
         }
         callbackContext.success(result);
     }
-    private static void addDeviceToArray(JSONArray result, int deviceId, int vendorId,
+    private static void addDeviceToArray(JSONArray result, String productName, int deviceId, int vendorId,
             int productId) throws JSONException {
         JSONObject jsonDev = new JSONObject();
         jsonDev.put("device", deviceId);
         jsonDev.put("vendorId", vendorId);
         jsonDev.put("productId", productId);
+        jsonDev.put("productName", productName);
         result.put(jsonDev);
     }
     private void openDevice(CordovaArgs args, JSONObject params,
@@ -657,6 +658,7 @@ public class ChromeUsb extends CordovaPlugin {
 
     // Fake device, used in test code.
     private static class FakeDevice extends ConnectedDevice {
+        static final String ProductName = "Fake Device";
         static final int ID = -1000000;
         static final int VID = 0x18d1;  // Google VID.
         static final int PID = 0x2001;  // Reserved for non-production uses.
