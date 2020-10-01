@@ -457,10 +457,14 @@ public class ChromeUsb extends CordovaPlugin {
         int direction = directionFromName(params.getString("direction"));
         byte[] buffer = getByteBufferForTransfer(args, params, direction);
 
-        int ret = dev.bulkTransfer(interfaceNumber, endpointNumber, direction, buffer,
-                params.getInt("timeout"));
-        if (ret < 0) {
-            throw new UsbError("Bulk transfer returned " + ret);
+        int chunkSize = 4096;
+        int ret = 0;
+        for(int i = 0; i < buffer.length; i += chunkSize) {
+            ret = dev.bulkTransfer(interfaceNumber, endpointNumber, direction, Arrays.copyOfRange(buffer, i, Math.min(buffer.length,i+chunkSize)),
+                    params.getInt("timeout"));
+            if (ret < 0) {
+                throw new UsbError("Bulk transfer returned " + ret);
+            }
         }
         if (direction == UsbConstants.USB_DIR_IN) {
             callbackContext.success(Arrays.copyOf(buffer, ret));
